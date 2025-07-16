@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphqlConfigModule } from './graphql/graphql.module';
 import { AppResolver } from './app.resolver';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { AppResolver } from './app.resolver';
       autoLoadEntities: true,
       synchronize: false,
     }),
-    GraphqlConfigModule
+    GraphqlConfigModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],
