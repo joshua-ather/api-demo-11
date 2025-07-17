@@ -35,7 +35,6 @@ This project uses the following stack for deployment and infrastructure:
 
 ```
 .
-├── data-source.ts                  # Database connection configuration (TypeORM)
 ├── src
 │  ├── app                          # Root module and app-level setup
 │  ├── auth                         # Authentication module
@@ -52,6 +51,7 @@ This project uses the following stack for deployment and infrastructure:
 │  │  ├── transaction.resolver.ts
 │  │  ├── transaction.service.ts
 │  │  └── dto/...
+│  ├── data-source.ts               # Database connection configuration (TypeORM)
 │  ├── main.ts                      # Application bootstrap file
 ```
 
