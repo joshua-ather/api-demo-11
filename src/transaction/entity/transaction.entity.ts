@@ -22,7 +22,7 @@ export class Transaction {
   user: User;
 
   @Column()
-  amount: string;
+  amount: number;
 
   @CreateDateColumn()
   created_at: Date;

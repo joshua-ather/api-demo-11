@@ -9,7 +9,7 @@ export class TransactionType {
   user_id: string;
 
   @Field()
-  amount: string;
+  amount: number;
 
   @Field()
   created_at: Date;
