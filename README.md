@@ -55,7 +55,7 @@ This project uses the following stack for deployment and infrastructure:
 │  ├── main.ts                      # Application bootstrap file
 ```
 
-## 🔐 Authentication
+## 🔁 REST API
 
 Login endpoint:
 
@@ -214,6 +214,57 @@ mutation ProcessTransaction {
 ```
 
 ![alt text](public/image-10.png)
+
+## 🧰 System Requirements
+
+Before running this project, ensure your system meets the following requirements:
+
+- **Node.js**: >= 18.x
+- **npm**: >= 9.x (comes with Node.js)
+- **PostgreSQL**: >= 13.x
+
+> Make sure PostgreSQL is up and running, and the credentials in `.env` match your setup.
+
+## 🛠️ Installation Instructions
+
+Follow these steps to set up and run the project:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/joshua-ather/api-demo-11.git
+cd api-demo-11
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Copy Environment File
+Create a .env file from the example:
+```bash
+cp .env.example .env
+```
+
+### 4. Create the Database (Manual Step)
+Before running migrations, make sure the database has already been created based on the DATABASE_NAME value in your .env.
+
+Using PostgreSQL CLI:
+```bash
+psql -U postgres
+CREATE DATABASE your_db_name;
+```
+Replace _your_db_name_ with your desired database name.
+
+### 5. Run Database Migrations
+```bash
+npm run migration:run
+```
+
+### 6. Start the Development Server
+```bash
+npm run start:dev
+```
 
 ## 📬 Postman Collection
 > [📁 Click here to download](https://github.com/joshua-ather/api-demo-11/releases/download/assets/demo11.postman_collection.json)
