@@ -1,10 +1,13 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateFnUpsertTransaction1752690442529 implements MigrationInterface {
-
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
-            CREATE OR REPLACE FUNCTION fn_upsert_transaction(p_id UUID, p_user_id UUID, p_amount TEXT)
+            CREATE OR REPLACE FUNCTION fn_upsert_transaction(
+                p_id UUID,
+                p_user_id UUID,
+                p_amount TEXT
+            )
             RETURNS UUID AS $$
             DECLARE
                 v_new_id UUID;
@@ -17,7 +20,7 @@ export class CreateFnUpsertTransaction1752690442529 implements MigrationInterfac
                 UPDATE "transaction"
                 SET amount = p_amount,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE id = p_id
+                WHERE "id" = p_id
                 RETURNING id INTO v_new_id;
                 END IF;
 
@@ -28,7 +31,8 @@ export class CreateFnUpsertTransaction1752690442529 implements MigrationInterfac
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP FUNCTION IF EXISTS fn_upsert_transaction(UUID, UUID, TEXT)`);
+        await queryRunner.query(`
+      DROP FUNCTION IF EXISTS fn_upsert_transaction(UUID, UUID, TEXT);
+    `);
     }
-
 }

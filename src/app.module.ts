@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphqlConfigModule } from './graphql/graphql.module';
 import { AppResolver } from './app.resolver';
 import { AuthModule } from './auth/auth.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -21,7 +22,8 @@ import { AuthModule } from './auth/auth.module';
       synchronize: false,
     }),
     GraphqlConfigModule,
-    AuthModule
+    AuthModule,
+    TransactionModule
   ],
   controllers: [AppController],
   providers: [AppService, AppResolver],

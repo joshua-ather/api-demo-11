@@ -1,56 +1,67 @@
 import {
-  ArgumentsHost,
-  Catch,
   ExceptionFilter,
+  Catch,
+  ArgumentsHost,
   HttpException,
+  HttpStatus,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { GqlArgumentsHost } from '@nestjs/graphql';
 import { ErrorResponseDto } from '../dto/error-response.dto';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: HttpException, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
-    const status = exception.getStatus();
-    const errorResp = exception.getResponse();
+    const statusCode = exception.getStatus?.() ?? HttpStatus.INTERNAL_SERVER_ERROR;
+    const exceptionResponse = exception.getResponse();
 
-    let message = 'An error occurred';
-    let errors: Record<string, string[] | string> = {};
+    let message: string | string[] = 'Something went wrong';
+    let rawErrors: any = {};
 
-    if (typeof errorResp === 'object' && (errorResp as any).message) {
-      const raw = (errorResp as any).message;
+    if (typeof exceptionResponse === 'string') {
+      message = exceptionResponse;
+    } else if (typeof exceptionResponse === 'object') {
+      const res = exceptionResponse as any;
 
-      console.log(raw);
-
-      if (Array.isArray(raw)) {
-        message = 'Validation failed';
-
-        // Convert error messages from class-validator into field-based format
-        for (const msg of raw) {
-          const [field, ...rest] = msg.split(' ');
-          const formatted = rest.join(' ') || msg;
-
-          if (!errors[field]) errors[field] = [];
-          (errors[field] as string[]).push(formatted);
-        }
-      } else {
-        message = raw;
-        errors = { message: raw };
+      if (Array.isArray(res.message) && res.message.every(msg => typeof msg === 'string')) {
+        message = 'Invalid validation';
+        rawErrors = this.formatValidationErrors(res.message);
+      } else if (res.message) {
+        message = res.message;
+        rawErrors = { message: Array.isArray(message) ? message : [message] };
       }
-    } else if (typeof errorResp === 'string') {
-      message = errorResp;
-      errors = { message: errorResp };
     }
 
-    const responseBody: ErrorResponseDto = {
+    const formatted: ErrorResponseDto = {
       success: false,
-      message,
-      statusCode: status,
-      errors,
+      message: Array.isArray(message) ? message[0] : message,
+      statusCode,
+      errors: rawErrors,
     };
 
-    response.status(status).json(responseBody);
+    try {
+      GqlArgumentsHost.create(host).getContext();
+      throw new HttpException(formatted, statusCode);
+    } catch {
+      const ctx = host.switchToHttp();
+      const response = ctx.getResponse();
+      if (typeof response.status === 'function') {
+        response.status(statusCode).json(formatted);
+      }
+    }
+  }
+
+  private formatValidationErrors(messages: string[]) {
+    const fieldErrorMap: Record<string, string[]> = {};
+
+    messages.forEach((msg) => {
+      const [field, ...rest] = msg.split(' ');
+      const fullMsg = rest.join(' ');
+      if (!fieldErrorMap[field]) {
+        fieldErrorMap[field] = [];
+      }
+      fieldErrorMap[field].push(fullMsg);
+    });
+
+    return fieldErrorMap;
   }
 }
