@@ -1,0 +1,25 @@
+services:
+  demo11-api:
+    build: .
+    container_name: demo11-api
+    restart: always
+    ports:
+      - "127.0.0.1:3001:3000"
+    env_file:
+      - .env.production
+    depends_on:
+      - demo11-db
+
+  demo11-db:
+    image: postgres:17.4-alpine
+    container_name: demo11-db
+    restart: always
+    environment:
+      POSTGRES_USER: $POSTGRES_USER
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
+      POSTGRES_DB: $POSTGRES_DB
+    volumes:
+      - demo11_data:/var/lib/postgresql/data
+
+volumes:
+  demo11_data:

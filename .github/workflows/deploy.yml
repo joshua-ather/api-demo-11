@@ -1,0 +1,56 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Generate .env.production
+        run: |
+          echo "NODE_ENV=${{ vars.ENV_NODE_ENV }}" > .env.production
+          echo "PORT=${{ vars.ENV_PORT }}" >> .env.production
+          echo "JWT_SECRET=${{ secrets.ENV_JWT_SECRET }}" >> .env.production
+          echo "JWT_EXPIRES_IN=${{ vars.ENV_JWT_EXPIRES_IN }}" >> .env.production
+          echo "DB_HOST=${{ vars.ENV_DB_HOST }}" >> .env.production
+          echo "DB_PORT=${{ vars.ENV_DB_PORT }}" >> .env.production
+          echo "DB_USER=${{ secrets.ENV_DB_USER }}" >> .env.production
+          echo "DB_PASSWORD=${{ secrets.ENV_DB_PASSWORD }}" >> .env.production
+          echo "DB_NAME=${{ vars.ENV_DB_NAME }}" >> .env.production
+
+      - name: 📂 Upload project to VPS
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: '.'
+          target: '/home/${{ secrets.SSH_USER }}/demo11'
+
+      - name: 📄 Upload .env.production
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: '.env.production'
+          target: '/home/${{ secrets.SSH_USER }}/demo11/'
+
+      - name: 🚀 SSH and Deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            cd demo11
+            docker-compose down
+            docker-compose up -d --build
